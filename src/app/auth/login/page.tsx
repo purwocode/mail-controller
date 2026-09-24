@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { signIn } from '@/lib/auth';
+import { signIn, setAuthCookie } from '@/lib/auth';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
 
 export default function LoginPage() {
@@ -26,6 +26,7 @@ export default function LoginPage() {
             }
 
             if (data) {
+                setAuthCookie();
                 router.push('/dashboard');
             }
         } catch (err) {

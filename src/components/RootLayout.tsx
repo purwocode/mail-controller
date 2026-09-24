@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { setAuthCookie, clearAuthCookie } from '@/lib/auth';
 import { Loader } from 'lucide-react';
 
 export function RootLayout({
@@ -23,6 +24,11 @@ export function RootLayout({
                 } = await supabase.auth.getSession();
 
                 setIsAuthenticated(!!session);
+                if (session) {
+                    setAuthCookie();
+                } else {
+                    clearAuthCookie();
+                }
 
                 // Redirect ke login jika belum authenticated (kecuali sudah di halaman auth)
                 if (!session && !pathname.startsWith('/auth')) {
@@ -44,6 +50,11 @@ export function RootLayout({
             data: { subscription },
         } = supabase.auth.onAuthStateChange((event, session) => {
             setIsAuthenticated(!!session);
+            if (session) {
+                setAuthCookie();
+            } else {
+                clearAuthCookie();
+            }
             if (event === 'SIGNED_OUT') {
                 router.push('/auth/login');
             }

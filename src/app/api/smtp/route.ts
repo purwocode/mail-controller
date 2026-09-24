@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/supabase';
 import { encrypt } from '@/lib/crypto';
+import {
+    isOptionalLongText,
+    isShortText,
+    isValidHost,
+    isValidPort,
+    parseJsonBody,
+    serverErrorResponse,
+} from '@/lib/route-helpers';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +27,7 @@ export async function GET(request: NextRequest) {
         .order('created_at', { ascending: false });
 
     if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return serverErrorResponse('GET /api/smtp', error);
     }
 
     return NextResponse.json({ data });
@@ -32,36 +40,49 @@ export async function POST(request: NextRequest) {
     }
     const { supabase, user } = auth;
 
-    const body = await request.json();
-    const { name, description, host, port, username, password, use_tls, is_default } = body;
+    const parsed = await parseJsonBody(request);
+    if ('error' in parsed) return parsed.error;
+    const { name, description, host, port, username, password, use_tls, is_default } = parsed.body as Record<string, unknown>;
 
-    if (!name || !host || !port || !username || !password) {
-        return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    if (
+        !isShortText(name) ||
+        !isValidHost(host) ||
+        !isValidPort(port) ||
+        !isShortText(username) ||
+        typeof password !== 'string' ||
+        !password ||
+        !isOptionalLongText(description)
+    ) {
+        return NextResponse.json({ error: 'Missing or invalid fields' }, { status: 400 });
     }
 
-    if (is_default) {
-        await supabase.from('smtp_configs').update({ is_default: false }).eq('user_id', user.id);
+    try {
+        if (is_default) {
+            await supabase.from('smtp_configs').update({ is_default: false }).eq('user_id', user.id);
+        }
+
+        const { data, error } = await supabase
+            .from('smtp_configs')
+            .insert({
+                user_id: user.id,
+                name,
+                description: description ?? null,
+                host,
+                port,
+                username,
+                password: encrypt(password),
+                use_tls: use_tls ?? true,
+                is_default: !!is_default,
+            })
+            .select(SELECT_FIELDS)
+            .single();
+
+        if (error) {
+            return serverErrorResponse('POST /api/smtp', error);
+        }
+
+        return NextResponse.json({ data }, { status: 201 });
+    } catch (error) {
+        return serverErrorResponse('POST /api/smtp', error);
     }
-
-    const { data, error } = await supabase
-        .from('smtp_configs')
-        .insert({
-            user_id: user.id,
-            name,
-            description: description ?? null,
-            host,
-            port,
-            username,
-            password: encrypt(password),
-            use_tls: use_tls ?? true,
-            is_default: !!is_default,
-        })
-        .select(SELECT_FIELDS)
-        .single();
-
-    if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    return NextResponse.json({ data }, { status: 201 });
 }

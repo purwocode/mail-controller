@@ -1,6 +1,21 @@
 import { supabase } from './supabase';
 import { Session } from '@supabase/supabase-js';
 
+const AUTH_COOKIE = 'sb-logged-in';
+
+// Non-sensitive presence flag only (no token/session data) - lets proxy.ts gate /dashboard
+// server-side. The actual security boundary remains the Bearer-token check in API routes.
+export function setAuthCookie() {
+    if (typeof document === 'undefined') return;
+    const secure = window.location.protocol === 'https:' ? '; Secure' : '';
+    document.cookie = `${AUTH_COOKIE}=1; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax${secure}`;
+}
+
+export function clearAuthCookie() {
+    if (typeof document === 'undefined') return;
+    document.cookie = `${AUTH_COOKIE}=; path=/; max-age=0`;
+}
+
 export async function getCurrentUser() {
     try {
         const {

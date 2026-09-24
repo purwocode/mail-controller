@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/supabase';
 import { encrypt } from '@/lib/crypto';
+import {
+    isOptionalLongText,
+    isShortText,
+    isValidEmail,
+    parseJsonBody,
+    serverErrorResponse,
+    MAX_LONG_TEXT,
+} from '@/lib/route-helpers';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +27,7 @@ export async function GET(request: NextRequest) {
         .order('created_at', { ascending: false });
 
     if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return serverErrorResponse('GET /api/email-providers', error);
     }
 
     return NextResponse.json({ data });
@@ -32,7 +40,8 @@ export async function POST(request: NextRequest) {
     }
     const { supabase, user } = auth;
 
-    const body = await request.json();
+    const parsed = await parseJsonBody(request);
+    if ('error' in parsed) return parsed.error;
     const {
         provider,
         name,
@@ -43,9 +52,9 @@ export async function POST(request: NextRequest) {
         gmail_sender_email,
         gmail_service_account_json,
         is_default,
-    } = body;
+    } = parsed.body as Record<string, unknown>;
 
-    if (!name || (provider !== 'graph' && provider !== 'gmail')) {
+    if (!isShortText(name) || (provider !== 'graph' && provider !== 'gmail') || !isOptionalLongText(description)) {
         return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -58,15 +67,26 @@ export async function POST(request: NextRequest) {
     };
 
     if (provider === 'graph') {
-        if (!graph_tenant_id || !graph_client_id || !graph_client_secret) {
-            return NextResponse.json({ error: 'Missing Microsoft Graph fields' }, { status: 400 });
+        if (
+            !isShortText(graph_tenant_id) ||
+            !isShortText(graph_client_id) ||
+            typeof graph_client_secret !== 'string' ||
+            !graph_client_secret ||
+            graph_client_secret.length > MAX_LONG_TEXT
+        ) {
+            return NextResponse.json({ error: 'Missing or invalid Microsoft Graph fields' }, { status: 400 });
         }
         insertData.graph_tenant_id = graph_tenant_id;
         insertData.graph_client_id = graph_client_id;
         insertData.graph_client_secret = encrypt(graph_client_secret);
     } else {
-        if (!gmail_sender_email || !gmail_service_account_json) {
-            return NextResponse.json({ error: 'Missing Gmail API fields' }, { status: 400 });
+        if (
+            !isValidEmail(gmail_sender_email) ||
+            typeof gmail_service_account_json !== 'string' ||
+            !gmail_service_account_json ||
+            gmail_service_account_json.length > MAX_LONG_TEXT
+        ) {
+            return NextResponse.json({ error: 'Missing or invalid Gmail API fields' }, { status: 400 });
         }
         try {
             JSON.parse(gmail_service_account_json);
@@ -77,23 +97,27 @@ export async function POST(request: NextRequest) {
         insertData.gmail_service_account_json = encrypt(gmail_service_account_json);
     }
 
-    if (is_default) {
-        await supabase
+    try {
+        if (is_default) {
+            await supabase
+                .from('email_provider_configs')
+                .update({ is_default: false })
+                .eq('user_id', user.id)
+                .eq('provider', provider);
+        }
+
+        const { data, error } = await supabase
             .from('email_provider_configs')
-            .update({ is_default: false })
-            .eq('user_id', user.id)
-            .eq('provider', provider);
+            .insert(insertData)
+            .select(SELECT_FIELDS)
+            .single();
+
+        if (error) {
+            return serverErrorResponse('POST /api/email-providers', error);
+        }
+
+        return NextResponse.json({ data }, { status: 201 });
+    } catch (error) {
+        return serverErrorResponse('POST /api/email-providers', error);
     }
-
-    const { data, error } = await supabase
-        .from('email_provider_configs')
-        .insert(insertData)
-        .select(SELECT_FIELDS)
-        .single();
-
-    if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    return NextResponse.json({ data }, { status: 201 });
 }

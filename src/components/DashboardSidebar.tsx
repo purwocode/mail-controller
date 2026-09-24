@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { clearAuthCookie } from '@/lib/auth';
 import {
     Menu,
     X,
@@ -32,6 +33,7 @@ export function DashboardSidebar() {
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
+        clearAuthCookie();
         router.push('/auth/login');
     };
 
