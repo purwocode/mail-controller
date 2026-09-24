@@ -9,14 +9,14 @@ Production: `https://your-domain.vercel.app`
 
 ## Authentication
 
-Most endpoints require authentication. Include session token in headers:
+All endpoints except `/api/health` require a valid Supabase session access token, sent as a Bearer header:
 
 ```bash
-curl -H "Cookie: auth_token=your_token" \
+curl -H "Authorization: Bearer $SUPABASE_SESSION_TOKEN" \
   https://your-domain/api/endpoint
 ```
 
-The app uses Supabase Auth which handles this automatically via cookies.
+The server validates the token against Supabase Auth and scopes all database queries to that user via Row Level Security (see `getAuthenticatedUser()` in `src/lib/supabase.ts`). There is no cookie-based session for the API - the client (dashboard pages) reads the token from the Supabase JS client session and attaches it via `src/lib/api.ts`.
 
 ## Endpoints
 
@@ -202,17 +202,7 @@ Common error messages:
 
 ## Rate Limiting
 
-API rate limits (per user):
-- Health check: Unlimited
-- Campaign send: 10 requests per hour
-- List import: 5 requests per hour
-
-Rate limit headers:
-```
-X-RateLimit-Limit: 10
-X-RateLimit-Remaining: 9
-X-RateLimit-Reset: 1234567890
-```
+Not currently implemented - all endpoints are only protected by Supabase auth + RLS. Add rate limiting (e.g. at the edge/proxy or via a service like Upstash) before exposing this publicly.
 
 ## Example Usage
 
@@ -307,9 +297,7 @@ retryWithBackoff(() => sendCampaign(campaignId));
 
 ## CORS
 
-CORS is enabled for:
-- Origin: `http://localhost:3000` (dev)
-- Origin: `https://your-domain.vercel.app` (prod)
+Not currently configured - these are same-origin Next.js Route Handlers with no explicit CORS headers, so cross-origin browser requests are blocked by default.
 
 ## Request/Response Format
 
@@ -329,38 +317,11 @@ X-Powered-By: Vercel
 
 ## Pagination
 
-List endpoints support pagination:
-
-```
-GET /api/resource?page=1&limit=10&sort=-created_at
-```
-
-Parameters:
-- `page`: Page number (default: 1)
-- `limit`: Items per page (default: 10, max: 100)
-- `sort`: Sort field with direction (+/-)
-
-Response includes:
-```json
-{
-  "data": [...],
-  "pagination": {
-    "page": 1,
-    "limit": 10,
-    "total": 100,
-    "pages": 10
-  }
-}
-```
+Not currently implemented - list endpoints (`GET /api/smtp`, `GET /api/email-providers`) return all rows for the authenticated user, ordered by `created_at desc`.
 
 ## API Versioning
 
-Current API version: `v1`
-
-Version in URL (future):
-```
-GET /api/v1/campaigns
-```
+Not currently implemented - there is a single unversioned API surface under `/api/*`.
 
 ## Support
 
@@ -374,6 +335,8 @@ For API issues:
 
 ### v1.0 (Current)
 - Health check endpoint
-- Campaign send endpoint
-- List import endpoint
-- Authentication via Supabase
+- SMTP config CRUD (`/api/smtp`, `/api/smtp/:id`)
+- Email provider CRUD (`/api/email-providers`, `/api/email-providers/:id`)
+- Campaign send endpoint (stub, auth-guarded)
+- List import endpoint (stub, auth-guarded)
+- Authentication via Supabase Bearer token + Row Level Security

@@ -4,22 +4,24 @@ Professional Email Marketing Platform built with Next.js, React, and Supabase.
 
 ## Features
 
-- ✅ **User Authentication** - Secure login with Supabase Auth
-- ✅ **SMTP Configuration** - Multiple SMTP server configurations
-- ✅ **Email Templates** - Beautiful, responsive email templates
-- ✅ **Email Lists** - Bulk upload and manage email lists
-- ✅ **Campaigns** - Create and manage email campaigns
-- ✅ **Analytics** - Track campaign performance
+- ✅ **Admin-only Authentication** - Single admin login via Supabase Auth, no public sign-up
+- ✅ **SMTP Configuration** - Multiple SMTP server configs, stored encrypted in Supabase
+- ✅ **Email Providers** - Microsoft Graph (OAuth2) and Gmail API credentials, stored encrypted in Supabase
+- ✅ **Email Templates** - Beautiful, responsive email templates (UI ready, editor pending)
+- ✅ **Email Lists** - Bulk upload and manage email lists (UI ready, upload pending)
+- ✅ **Campaigns** - Create and manage email campaigns (UI ready, sending pending)
+- ✅ **Analytics** - Track campaign performance (placeholder)
 - ✅ **Dashboard** - Comprehensive dashboard with statistics
+- ✅ **Hardened API** - Input validation, no leaked error details, server-side auth on every route
 - ✅ **Vercel Ready** - One-click deployment to Vercel
 
 ## Tech Stack
 
-- **Frontend**: Next.js 14, React, Tailwind CSS
-- **Backend**: Next.js API Routes, Node.js
-- **Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth
-- **UI Components**: Lucide React, Custom components
+- **Frontend**: Next.js 16 (App Router, Turbopack), React 19, Tailwind CSS v4
+- **Backend**: Next.js Route Handlers, Node.js
+- **Database**: Supabase (PostgreSQL) with Row Level Security
+- **Authentication**: Supabase Auth - admin login only, no public sign-up
+- **UI Components**: Lucide React, custom components
 - **Deployment**: Vercel
 
 ## Prerequisites
@@ -77,10 +79,10 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## User Flow
 
-1. **Sign Up** (`/auth/signup`) - Create a new account
-2. **Login** (`/auth/login`) - Login with email and password
-3. **Dashboard** (`/dashboard`) - View statistics and quick actions
-4. **SMTP Config** (`/dashboard/smtp`) - Setup email sending servers
+1. **Login** (`/auth/login`) - Admin logs in with email and password (account created directly in Supabase, no public sign-up)
+2. **Dashboard** (`/dashboard`) - View statistics and quick actions
+3. **SMTP Config** (`/dashboard/smtp`) - Setup SMTP sending servers
+4. **Email Providers** (`/dashboard/providers`) - Setup Microsoft Graph / Gmail API credentials
 5. **Templates** (`/dashboard/templates`) - Create email templates
 6. **Email Lists** (`/dashboard/lists`) - Upload recipient lists
 7. **Campaigns** (`/dashboard/campaigns`) - Create and send campaigns
@@ -93,28 +95,35 @@ emailcoy-web/
 ├── src/
 │   ├── app/
 │   │   ├── auth/                 # Authentication pages
-│   │   │   ├── login/page.tsx
-│   │   │   └── signup/page.tsx
+│   │   │   └── login/page.tsx    # Login (no sign-up page)
 │   │   ├── dashboard/            # Dashboard pages
 │   │   │   ├── page.tsx          # Main dashboard
 │   │   │   ├── smtp/page.tsx     # SMTP configuration
+│   │   │   ├── providers/page.tsx # Microsoft Graph / Gmail API configuration
 │   │   │   ├── templates/page.tsx # Email templates
 │   │   │   ├── lists/page.tsx    # Email lists
 │   │   │   ├── campaigns/page.tsx # Campaigns
 │   │   │   └── analytics/page.tsx # Analytics
-│   │   ├── api/                  # API routes
+│   │   ├── api/                  # API routes (all but /health require a Bearer token)
 │   │   │   ├── health/route.ts
+│   │   │   ├── smtp/route.ts + [id]/route.ts
+│   │   │   ├── email-providers/route.ts + [id]/route.ts
 │   │   │   ├── campaigns/send/route.ts
 │   │   │   └── lists/import/route.ts
 │   │   ├── layout.tsx            # Root layout
+│   │   ├── icon.svg              # App icon/favicon
 │   │   └── globals.css           # Global styles
 │   ├── components/
 │   │   ├── RootLayout.tsx        # Auth state management
 │   │   └── DashboardSidebar.tsx  # Dashboard navigation
-│   └── lib/
-│       ├── supabase.ts           # Supabase client
-│       ├── auth.ts               # Auth utilities
-│       └── types.ts              # TypeScript types
+│   ├── lib/
+│   │   ├── supabase.ts           # Supabase client + server-side auth helper
+│   │   ├── auth.ts               # Auth utilities
+│   │   ├── crypto.ts             # AES-256-GCM encryption for stored secrets
+│   │   ├── api.ts                # Client-side authenticated fetch helper
+│   │   ├── route-helpers.ts      # API input validation + safe error responses
+│   │   └── types.ts              # TypeScript types
+│   └── proxy.ts                  # Server-side gate for /dashboard
 ├── .env.local.example            # Environment template
 ├── next.config.ts                # Next.js config
 ├── tsconfig.json                 # TypeScript config
@@ -123,7 +132,7 @@ emailcoy-web/
 
 ## Environment Variables
 
-Create `.env.local` file with these variables:
+Create `.env.local` file with these variables (see `.env.local.example`):
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=
@@ -132,6 +141,8 @@ SUPABASE_SERVICE_ROLE_KEY=
 NEXT_PUBLIC_APP_URL=
 APP_SECRET=
 ```
+
+SMTP / Microsoft Graph / Gmail credentials are **not** env vars - they're managed per-account from `/dashboard/smtp` and `/dashboard/providers`, stored encrypted in Supabase.
 
 ## Deployment
 
@@ -148,23 +159,34 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.
 
 ## API Routes
 
+All routes except `/api/health` require an `Authorization: Bearer <supabase-access-token>` header; see [API.md](./API.md) for full details.
+
 ### Health Check
 - `GET /api/health` - Health check endpoint
 
+### SMTP Configs
+- `GET/POST /api/smtp`, `PATCH/DELETE /api/smtp/:id` - Manage SMTP server credentials
+
+### Email Providers
+- `GET/POST /api/email-providers`, `PATCH/DELETE /api/email-providers/:id` - Manage Microsoft Graph / Gmail API credentials
+
 ### Campaigns
-- `POST /api/campaigns/send` - Send campaign emails
+- `POST /api/campaigns/send` - Send campaign emails (sending logic not yet implemented)
 
 ### Lists
-- `POST /api/lists/import` - Import email list
+- `POST /api/lists/import` - Import email list (parsing logic not yet implemented)
 
 ## Security
 
-- ✅ User authentication required for dashboard access
-- ✅ Passwords hashed with bcrypt
+- ✅ Admin-only login, no public sign-up (also disable "Allow new users to sign up" in Supabase Auth settings)
+- ✅ Server-side gate on `/dashboard/*` (`src/proxy.ts`) plus Bearer-token + RLS auth on every `/api/*` route
+- ✅ SMTP passwords, Microsoft Graph client secret, and Gmail service account JSON encrypted (AES-256-GCM) before storage, and never returned by the API
+- ✅ Input validation on all write endpoints; error responses never leak internal details
+- ✅ Passwords hashed by Supabase Auth
 - ✅ Service role key never exposed to client
 - ✅ Row-level security on database tables
-- ✅ CORS protection
-- ✅ SQL injection prevention via Supabase
+- ✅ SQL injection prevention via Supabase's parameterized queries
+- ✅ XSS prevention via React's default output escaping
 
 ## Support
 

@@ -108,23 +108,12 @@ export default function LoginPage() {
                             {loading ? 'Signing in...' : 'Sign In'}
                         </button>
                     </form>
-
-                    {/* Footer */}
-                    <p className="mt-6 text-center text-sm text-gray-600">
-                        Don't have an account?{' '}
-                        <a
-                            href="/auth/signup"
-                            className="text-blue-600 hover:text-blue-700 font-medium transition"
-                        >
-                            Sign up here
-                        </a>
-                    </p>
                 </div>
 
                 {/* Demo Credentials Info */}
                 <div className="mt-8 p-4 bg-white bg-opacity-50 rounded-lg border border-gray-200">
                     <p className="text-xs text-gray-600">
-                        <strong>Demo Info:</strong> Setelah membuat akun, silakan login dengan email dan password Anda.
+                        <strong>Info:</strong> Akses khusus admin. Gunakan akun yang sudah dibuat di Supabase.
                     </p>
                 </div>
             </div>

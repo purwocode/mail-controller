@@ -13,27 +13,12 @@ npm run dev
 
 ## 1. Authentication Testing
 
-### Sign Up Flow
-- [ ] Visit `/auth/signup`
-- [ ] Enter valid email
-- [ ] Enter password (≥ 6 characters)
-- [ ] Confirm password
-- [ ] Click "Create Account"
-- [ ] Should redirect to `/auth/login` after success
-- [ ] Verify account created in Supabase > Authentication > Users
-
-### Invalid Inputs
-- [ ] Try password < 6 characters - Should show error
-- [ ] Try non-matching passwords - Should show error
-- [ ] Try invalid email format - Should show error
-- [ ] Try existing email - Should show error
-
 ### Login Flow
 - [ ] Visit `/auth/login`
-- [ ] Enter correct email and password
+- [ ] Enter correct email and password for the admin account (created directly in Supabase - no public sign-up)
 - [ ] Click "Sign In"
 - [ ] Should redirect to `/dashboard`
-- [ ] Session should be stored in browser cookies
+- [ ] Direct-navigate to `/dashboard` while logged out (e.g. incognito) - `proxy.ts` should redirect to `/auth/login` server-side before the page renders
 
 ### Login Validation
 - [ ] Try wrong password - Should show error
@@ -43,7 +28,6 @@ npm run dev
 ### Logout
 - [ ] Click "Logout" in sidebar
 - [ ] Should redirect to `/auth/login`
-- [ ] Cookies should be cleared
 - [ ] Trying to visit `/dashboard` should redirect to login
 
 ## 2. Dashboard Testing
@@ -118,7 +102,22 @@ npm run dev
 - [ ] Click "Cancel" button
 - [ ] Form disappears
 
-## 4. Templates Page Testing
+## 4. Email Providers Testing
+
+### Add Microsoft Graph Config
+- [ ] Go to `/dashboard/providers`, click "Add New Provider", select "Microsoft Graph"
+- [ ] Fill in Tenant ID, Client ID, Client Secret and save
+- [ ] Config appears in the list; secret is never shown back in the UI
+
+### Add Gmail API Config
+- [ ] Select "Gmail API", fill in sender email + service account JSON and save
+- [ ] Invalid JSON should show a validation error instead of saving
+
+### Edit/Delete
+- [ ] Edit a config without re-entering the secret - existing encrypted secret should be kept
+- [ ] Delete a config - should be removed from the list
+
+## 5. Templates Page Testing
 
 ### Page Load
 - [ ] Templates page loads
@@ -129,7 +128,7 @@ npm run dev
 - [ ] Clicking "Create New Template" navigates correctly
 - [ ] Back button works (via sidebar)
 
-## 5. Email Lists Page Testing
+## 6. Email Lists Page Testing
 
 ### Page Load
 - [ ] Email Lists page loads
@@ -139,7 +138,7 @@ npm run dev
 ### Navigation
 - [ ] Clicking "Upload New List" navigates correctly
 
-## 6. Campaigns Page Testing
+## 7. Campaigns Page Testing
 
 ### Page Load
 - [ ] Campaigns page loads
@@ -149,14 +148,14 @@ npm run dev
 ### Navigation
 - [ ] Clicking "Create New Campaign" navigates correctly
 
-## 7. Analytics Page Testing
+## 8. Analytics Page Testing
 
 ### Page Load
 - [ ] Analytics page loads
 - [ ] Shows "Coming Soon" message
 - [ ] Shows placeholder chart areas
 
-## 8. Responsive Design Testing
+## 9. Responsive Design Testing
 
 ### Desktop (1920px)
 - [ ] All elements display correctly
@@ -174,7 +173,7 @@ npm run dev
 - [ ] Content is single column
 - [ ] Forms are usable on small screens
 
-## 9. API Testing
+## 10. API Testing
 
 ### Health Check
 ```bash
@@ -183,7 +182,7 @@ curl http://localhost:3000/api/health
 - [ ] Should return 200 status
 - [ ] Should include timestamp
 
-## 10. Database Testing
+## 11. Database Testing
 
 ### Verify Tables Exist
 In Supabase SQL Editor:
@@ -203,10 +202,10 @@ WHERE schemaname = 'public';
 - [ ] RLS is enabled on all tables
 
 ### Verify User Creation
-- [ ] After signup, user appears in `public.users` table
+- [ ] Admin user exists in `public.users` table
 - [ ] User ID matches auth.users table
 
-## 11. Browser Compatibility
+## 12. Browser Compatibility
 
 ### Chrome
 - [ ] All pages load
@@ -228,7 +227,7 @@ WHERE schemaname = 'public';
 - [ ] All features work
 - [ ] No console errors
 
-## 12. Performance Testing
+## 13. Performance Testing
 
 ### Load Time
 - [ ] Home page loads in < 2 seconds
@@ -242,7 +241,7 @@ npm run build
 - [ ] Build completes without errors
 - [ ] Next.js reports reasonable bundle size
 
-## 13. Security Testing
+## 14. Security Testing
 
 ### XSS Protection
 - [ ] Try injecting `<script>alert('xss')</script>` in form fields
@@ -257,7 +256,7 @@ npm run build
 - [ ] Service role key not exposed in client code
 - [ ] Environment variables not logged
 
-## 14. Accessibility Testing
+## 15. Accessibility Testing
 
 ### Keyboard Navigation
 - [ ] Tab through all interactive elements

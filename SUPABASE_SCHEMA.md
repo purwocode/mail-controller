@@ -289,7 +289,7 @@ CREATE POLICY campaign_logs_policy ON public.campaign_logs
 
 ## Create User Trigger
 
-Automatically create user record when a new user signs up:
+Automatically create a `public.users` row whenever an account is added to `auth.users` - this fires no matter how the account was created (there's no public sign-up page, so in practice that's you adding the admin account via Supabase Dashboard > Authentication > Users, or the Admin API):
 
 ```sql
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -339,8 +339,9 @@ WHERE schemaname = 'public';
 1. ✅ Run all SQL queries above
 2. ✅ Verify schema in Supabase dashboard
 3. ✅ Update `.env.local` with your Supabase credentials
-4. ✅ Start development server: `npm run dev`
-5. ✅ Create an account and test the application
+4. ✅ Create the admin account: Supabase Dashboard > Authentication > Users > Add user (there is no public sign-up page)
+5. ✅ Disable public sign-up: Supabase Dashboard > Authentication settings
+6. ✅ Start development server: `npm run dev` and test login
 
 ## Backup
 

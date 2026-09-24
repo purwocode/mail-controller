@@ -4,7 +4,7 @@ Follow these steps in order to get your Zero Sender Web application running.
 
 ## ✅ Step 1: Project Already Created
 
-- [x] Next.js 14 project initialized
+- [x] Next.js 16 project initialized
 - [x] Dependencies installed (npm packages ready)
 - [x] TypeScript configured
 - [x] Tailwind CSS configured
@@ -64,7 +64,7 @@ npm run dev
 
 **Expected Output:**
 ```
-  ▲ Next.js 14.0.0
+  ▲ Next.js 16.x
   - Local:        http://localhost:3000
 ```
 
@@ -76,12 +76,7 @@ npm run dev
 ### Test Authentication
 - [ ] Open http://localhost:3000 in browser
 - [ ] You should see **Login Page**
-- [ ] Click "Sign up here"
-- [ ] Create test account:
-  - Email: `test@example.com`
-  - Password: `Test123456` (or any ≥ 6 chars)
-- [ ] Click "Create Account"
-- [ ] Should redirect to login page
+- [ ] Create the admin account directly in Supabase (Authentication > Users > Add user) - no public sign-up
 - [ ] Login with credentials
 - [ ] Should see **Dashboard**
 
@@ -93,6 +88,7 @@ npm run dev
 
 ### Test Navigation
 - [ ] Click "SMTP Config" - Page loads
+- [ ] Click "Email Providers" - Page loads
 - [ ] Click "Templates" - Page loads
 - [ ] Click "Email Lists" - Page loads
 - [ ] Click "Campaigns" - Page loads
@@ -156,7 +152,6 @@ See `DEPLOYMENT.md` for detailed instructions.
 |------|---------|
 | `.env.local` | Environment variables (DO NOT COMMIT) |
 | `src/app/auth/login/page.tsx` | Login page |
-| `src/app/auth/signup/page.tsx` | Sign up page |
 | `src/app/dashboard/page.tsx` | Main dashboard |
 | `src/app/dashboard/smtp/page.tsx` | SMTP configuration |
 | `src/lib/supabase.ts` | Supabase client |
@@ -184,8 +179,8 @@ npm run dev
 
 ### "Login always fails"
 - Verify email/password are correct
-- Check Supabase > Auth > Users to see if account exists
-- Try creating new account
+- Check Supabase > Auth > Users to confirm the admin account exists
+- Reset the password from Supabase > Authentication > Users if needed
 
 ### "SMTP config not saving"
 - Database might not be set up yet

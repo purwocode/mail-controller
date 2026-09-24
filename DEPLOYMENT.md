@@ -58,9 +58,11 @@ APP_SECRET=your-super-secret-key
 ### 6. Verify Deployment
 
 1. Visit your Vercel domain
-2. Test signup/login
-3. Check that all pages load correctly
-4. Verify environment variables are working
+2. In Supabase Dashboard > Authentication > Users, add your admin account if you haven't already (there is no public sign-up page)
+3. In Supabase Dashboard > Authentication settings, disable "Allow new users to sign up"
+4. Test login
+5. Check that all pages load correctly
+6. Verify environment variables are working
 
 ## Vercel Project Settings (Optional)
 
@@ -222,8 +224,10 @@ To delete the entire Vercel project:
 
 ## Post-Deployment Checklist
 
-- [ ] Login works with test account
-- [ ] SMTP configuration page loads
+- [ ] Login works with the admin account
+- [ ] Public sign-up is disabled in Supabase Auth settings
+- [ ] SMTP configuration page loads and saving a config works
+- [ ] Email Providers (Microsoft Graph / Gmail) page loads and saving a config works
 - [ ] Template creation works
 - [ ] Email list upload works
 - [ ] Campaign creation works

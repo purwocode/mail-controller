@@ -45,23 +45,6 @@ export async function getCurrentSession(): Promise<Session | null> {
     }
 }
 
-export async function signUp(email: string, password: string) {
-    try {
-        const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-        });
-
-        if (error) {
-            throw error;
-        }
-
-        return { data, error: null };
-    } catch (error) {
-        return { data: null, error };
-    }
-}
-
 export async function signIn(email: string, password: string) {
     try {
         const { data, error } = await supabase.auth.signInWithPassword({

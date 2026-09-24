@@ -1,25 +1,26 @@
 # Zero Sender Web - Project Summary
 
-**Created**: 2024-01-15  
-**Framework**: Next.js 14 + React 18  
+**Framework**: Next.js 16 + React 19  
 **Database**: Supabase  
-**Authentication**: Supabase Auth  
+**Authentication**: Supabase Auth (admin-only, no public sign-up)  
 **Deployment**: Vercel  
-**Status**: ✅ Ready for Development
+**Status**: ✅ Auth, dashboard, SMTP and Email Provider config implemented; email sending logic pending
 
 ## Project Overview
 
-Zero Sender Web adalah transformasi dari desktop application menjadi web-based email marketing platform dengan fitur:
+Zero Sender Web adalah transformasi dari desktop application menjadi web-based email marketing platform untuk pemakaian pribadi/single-admin, dengan fitur:
 
-✅ User authentication (Sign up/Login)  
+✅ Admin-only authentication (no public sign-up)  
 ✅ Dashboard dengan statistics  
-✅ SMTP configuration management  
-✅ Email template builder  
-✅ Email list management  
-✅ Campaign management  
+✅ SMTP configuration management (real backend, encrypted, stored in Supabase)  
+✅ Email Provider management - Microsoft Graph & Gmail API (real backend, encrypted, stored in Supabase)  
+✅ Email template builder (UI ready, editor pending)  
+✅ Email list management (UI ready, upload pending)  
+✅ Campaign management (UI ready, sending pending)  
 ✅ Analytics (placeholder)  
 ✅ Mobile-responsive design  
 ✅ Secure database with RLS  
+✅ Hardened API routes (input validation, safe errors, server-side auth)  
 ✅ Vercel deployment ready  
 
 ## Project Structure
@@ -27,56 +28,64 @@ Zero Sender Web adalah transformasi dari desktop application menjadi web-based e
 ```
 d:\emailcoy-web/
 ├── src/
-│   ├── app/                          # Next.js App Router
+│   ├── app/                              # Next.js App Router
 │   │   ├── auth/
-│   │   │   ├── login/page.tsx        # Login page
-│   │   │   └── signup/page.tsx       # Sign up page
+│   │   │   └── login/page.tsx            # Login page (no sign-up)
 │   │   ├── dashboard/
-│   │   │   ├── layout.tsx            # Dashboard layout with sidebar
-│   │   │   ├── page.tsx              # Dashboard home
-│   │   │   ├── smtp/page.tsx         # SMTP configuration
-│   │   │   ├── templates/page.tsx    # Email templates
-│   │   │   ├── lists/page.tsx        # Email lists
-│   │   │   ├── campaigns/page.tsx    # Email campaigns
-│   │   │   └── analytics/page.tsx    # Campaign analytics
+│   │   │   ├── layout.tsx                # Dashboard layout with sidebar
+│   │   │   ├── page.tsx                  # Dashboard home
+│   │   │   ├── smtp/page.tsx             # SMTP configuration
+│   │   │   ├── providers/page.tsx        # Microsoft Graph / Gmail API configuration
+│   │   │   ├── templates/page.tsx        # Email templates
+│   │   │   ├── lists/page.tsx            # Email lists
+│   │   │   ├── campaigns/page.tsx        # Email campaigns
+│   │   │   └── analytics/page.tsx        # Campaign analytics
 │   │   ├── api/
-│   │   │   ├── health/route.ts       # Health check endpoint
-│   │   │   ├── campaigns/send/route.ts # Send campaign emails
-│   │   │   └── lists/import/route.ts # Import email lists
-│   │   ├── layout.tsx                # Root layout
-│   │   ├── globals.css               # Global Tailwind CSS
-│   │   └── page.tsx                  # Home page (redirects to login/dashboard)
+│   │   │   ├── health/route.ts               # Health check endpoint
+│   │   │   ├── smtp/route.ts                 # List/create SMTP configs
+│   │   │   ├── smtp/[id]/route.ts            # Update/delete SMTP config
+│   │   │   ├── email-providers/route.ts      # List/create Graph/Gmail configs
+│   │   │   ├── email-providers/[id]/route.ts # Update/delete Graph/Gmail config
+│   │   │   ├── campaigns/send/route.ts       # Send campaign emails (stub)
+│   │   │   └── lists/import/route.ts         # Import email lists (stub)
+│   │   ├── layout.tsx                    # Root layout
+│   │   ├── icon.svg                      # App icon/favicon
+│   │   ├── globals.css                   # Global Tailwind CSS
+│   │   └── page.tsx                      # Home page (redirects to login/dashboard)
 │   ├── components/
-│   │   ├── RootLayout.tsx            # Auth state provider & redirects
-│   │   └── DashboardSidebar.tsx      # Dashboard navigation sidebar
-│   └── lib/
-│       ├── supabase.ts               # Supabase client initialization
-│       ├── auth.ts                   # Auth helper functions
-│       └── types.ts                  # TypeScript interfaces
-├── public/                           # Static assets
-├── .env.local.example                # Environment variables template
-├── .gitignore                        # Git ignore rules
-├── next.config.ts                    # Next.js configuration
-├── tailwind.config.ts                # Tailwind CSS configuration
-├── tsconfig.json                     # TypeScript configuration
-├── package.json                      # Dependencies
+│   │   ├── RootLayout.tsx                # Auth state provider & redirects
+│   │   └── DashboardSidebar.tsx          # Dashboard navigation sidebar
+│   ├── lib/
+│   │   ├── supabase.ts                   # Supabase clients (browser, service role, per-request auth)
+│   │   ├── auth.ts                       # Auth helper functions + login-state cookie sync
+│   │   ├── crypto.ts                     # AES-256-GCM encryption for stored secrets
+│   │   ├── api.ts                        # Client-side authenticated fetch helper
+│   │   ├── route-helpers.ts              # API input validation + safe error responses
+│   │   └── types.ts                      # TypeScript interfaces
+│   └── proxy.ts                          # Server-side gate for /dashboard routes
+├── public/                               # Static assets
+├── .env.local.example                    # Environment variables template
+├── .gitignore                            # Git ignore rules
+├── next.config.ts                        # Next.js configuration
+├── tsconfig.json                         # TypeScript configuration
+├── package.json                          # Dependencies
 │
-├── README.md                         # Full project documentation
-├── QUICKSTART.md                     # 5-minute setup guide
-├── SUPABASE_SCHEMA.md               # Database schema SQL
-├── DEPLOYMENT.md                    # Vercel deployment guide
-├── TESTING.md                       # Testing checklist
-├── API.md                           # API documentation
-└── PROJECT_SUMMARY.md               # This file
+├── README.md                             # Full project documentation
+├── QUICKSTART.md                         # 5-minute setup guide
+├── SUPABASE_SCHEMA.md                    # Database schema SQL
+├── DEPLOYMENT.md                         # Vercel deployment guide
+├── TESTING.md                            # Testing checklist
+├── API.md                                # API documentation
+└── PROJECT_SUMMARY.md                    # This file
 ```
 
 ## Key Files Explanation
 
 ### Authentication Files
-- `src/components/RootLayout.tsx` - Wraps entire app, checks auth status, redirects to login if not authenticated
-- `src/lib/auth.ts` - Helper functions: signIn, signUp, signOut, resetPassword
-- `src/app/auth/login/page.tsx` - Beautiful login form with error handling
-- `src/app/auth/signup/page.tsx` - Registration form with validation
+- `src/components/RootLayout.tsx` - Wraps entire app, checks auth status client-side, redirects to login if not authenticated, syncs a login-state cookie
+- `src/proxy.ts` - Server-side gate that redirects unauthenticated requests to `/dashboard/*` before the page renders
+- `src/lib/auth.ts` - Helper functions: signIn, signOut, resetPassword, session cookie sync
+- `src/app/auth/login/page.tsx` - Login form with error handling (no sign-up page - admin account is created directly in Supabase)
 
 ### Dashboard Files
 - `src/app/dashboard/layout.tsx` - Layout wrapper with sidebar
@@ -84,27 +93,32 @@ d:\emailcoy-web/
 - `src/app/dashboard/page.tsx` - Main dashboard with stats and quick actions
 
 ### Feature Pages
-- `src/app/dashboard/smtp/page.tsx` - SMTP server configuration (add/edit/delete)
-- `src/app/dashboard/templates/page.tsx` - Email template management
-- `src/app/dashboard/lists/page.tsx` - Email list upload
-- `src/app/dashboard/campaigns/page.tsx` - Email campaign management
+- `src/app/dashboard/smtp/page.tsx` - SMTP server configuration (add/edit/delete, backed by `/api/smtp`)
+- `src/app/dashboard/providers/page.tsx` - Microsoft Graph / Gmail API configuration (backed by `/api/email-providers`)
+- `src/app/dashboard/templates/page.tsx` - Email template management (UI only, no backend yet)
+- `src/app/dashboard/lists/page.tsx` - Email list upload (UI only, no backend yet)
+- `src/app/dashboard/campaigns/page.tsx` - Email campaign management (UI only, no backend yet)
 - `src/app/dashboard/analytics/page.tsx` - Campaign analytics (placeholder)
 
 ### API Routes
 - `src/app/api/health/route.ts` - Server health check
-- `src/app/api/campaigns/send/route.ts` - Send campaign endpoint
-- `src/app/api/lists/import/route.ts` - Import email list endpoint
+- `src/app/api/smtp/route.ts` + `[id]/route.ts` - SMTP config CRUD
+- `src/app/api/email-providers/route.ts` + `[id]/route.ts` - Microsoft Graph / Gmail config CRUD
+- `src/app/api/campaigns/send/route.ts` - Send campaign endpoint (auth-guarded stub, sending logic pending)
+- `src/app/api/lists/import/route.ts` - Import email list endpoint (auth-guarded stub, parsing logic pending)
 
 ### Library Files
-- `src/lib/supabase.ts` - Supabase client setup with service role
+- `src/lib/supabase.ts` - Browser client, service-role client, and `getAuthenticatedUser()` for per-request RLS-scoped access in route handlers
 - `src/lib/auth.ts` - Authentication utilities
+- `src/lib/crypto.ts` - AES-256-GCM encrypt/decrypt for SMTP passwords and OAuth secrets (keyed from `APP_SECRET`)
+- `src/lib/api.ts` - `apiFetch()` client helper that attaches the Supabase Bearer token
+- `src/lib/route-helpers.ts` - Shared input validators and `serverErrorResponse()` (never leaks raw error details to clients)
 - `src/lib/types.ts` - TypeScript types for all models
 
 ### Configuration Files
 - `.env.local.example` - Template for environment variables
 - `next.config.ts` - Next.js settings
 - `tsconfig.json` - TypeScript settings
-- `tailwind.config.ts` - Tailwind CSS configuration
 
 ## Database Schema
 
@@ -112,7 +126,8 @@ Supabase PostgreSQL database includes:
 
 **Tables:**
 - `users` - User profiles (extends auth.users)
-- `smtp_configs` - SMTP server configurations
+- `smtp_configs` - SMTP server configurations (password encrypted)
+- `email_provider_configs` - Microsoft Graph / Gmail API configurations (secrets encrypted)
 - `email_templates` - Email templates
 - `email_lists` - Email recipient lists
 - `email_addresses` - Individual email addresses in lists
@@ -122,29 +137,30 @@ Supabase PostgreSQL database includes:
 **Security:**
 - Row Level Security (RLS) enabled on all tables
 - Each user can only see their own data
-- Automatic user record creation on signup
+- Automatic user record creation on account creation (DB trigger)
 - Service role key for admin operations (server-side only)
+- Sensitive fields (SMTP password, Graph client secret, Gmail service account JSON) encrypted at rest
 
 See `SUPABASE_SCHEMA.md` for complete SQL schema.
 
 ## Technology Stack
 
 ### Frontend
-- **Next.js 14** - React framework with App Router
-- **React 18** - UI components
-- **Tailwind CSS** - Utility-first CSS
-- **TypeScript** - Type safety
+- **Next.js 16** (App Router, Turbopack) - React framework
+- **React 19** - UI components
+- **Tailwind CSS v4** - Utility-first CSS
+- **TypeScript** (strict mode) - Type safety
 - **Lucide React** - Icon components
-- **Axios** - HTTP client (optional)
+- **Axios** - HTTP client (optional, not currently used by app code)
 
 ### Backend
-- **Next.js API Routes** - Backend endpoints
+- **Next.js Route Handlers** - Backend endpoints
 - **Node.js** - JavaScript runtime
 - **Supabase SDK** - Database & auth client
 
 ### Database & Auth
 - **Supabase** - PostgreSQL database
-- **Supabase Auth** - User authentication
+- **Supabase Auth** - Admin-only authentication (no public sign-up)
 
 ### Deployment
 - **Vercel** - Hosting platform
@@ -162,20 +178,18 @@ NEXT_PUBLIC_SUPABASE_URL=           # Supabase project URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY=      # Public anon key
 SUPABASE_SERVICE_ROLE_KEY=          # Private service role key
 NEXT_PUBLIC_APP_URL=                # App URL (http://localhost:3000 or https://domain.vercel.app)
-APP_SECRET=                         # Secret for sessions/crypto
+APP_SECRET=                         # Root key for encrypting SMTP/Graph/Gmail secrets stored in Supabase
 ```
 
-See `.env.local.example` for template.
+SMTP / Microsoft Graph / Gmail credentials are **not** env vars anymore - see `.env.local.example` for details.
 
 ## Features Implemented
 
 ### Authentication ✅
-- [x] Sign up with email/password
-- [x] Login with email/password
+- [x] Admin login with email/password (account created directly in Supabase - no public sign-up UI)
 - [x] Logout
-- [x] Session management
-- [x] Auth state persistence
-- [x] Protected dashboard routes
+- [x] Session management (Supabase client session + a non-sensitive login-state cookie for server-side gating)
+- [x] Protected dashboard routes (client-side redirect + server-side `proxy.ts` gate)
 - [x] Automatic redirect based on auth state
 
 ### Dashboard ✅
@@ -185,43 +199,37 @@ See `.env.local.example` for template.
 - [x] Getting started guide
 - [x] Responsive layout
 
-### SMTP Configuration ✅
-- [x] Add new SMTP config
-- [x] List all configs
-- [x] Edit existing config
-- [x] Delete config
-- [x] Set default SMTP
+### SMTP Configuration ✅ (real backend)
+- [x] Add/edit/delete SMTP configs via `/api/smtp`
+- [x] Password encrypted (AES-256-GCM) before storage, never returned by the API
+- [x] Set default SMTP server
 - [x] Password toggle visibility
-- [x] Form validation
+- [x] Form + server-side validation
 
-### Templates ✅
-- [x] Template listing page
-- [x] Create new template button
-- [x] Edit template button
-- [x] Delete template button
-- [x] Preview template button
-- [x] (Editor UI ready for implementation)
+### Email Providers ✅ (real backend)
+- [x] Add/edit/delete Microsoft Graph (OAuth2) configs via `/api/email-providers`
+- [x] Add/edit/delete Gmail API (service account) configs
+- [x] Secrets encrypted (AES-256-GCM) before storage, never returned by the API
+- [x] Set default config per provider type
 
-### Email Lists ✅
-- [x] Email lists listing page
-- [x] Upload new list button
-- [x] Supported formats info
-- [x] (Upload UI ready for implementation)
-
-### Campaigns ✅
-- [x] Campaign listing page
-- [x] Create new campaign button
-- [x] (Campaign builder UI ready for implementation)
-
-### Analytics ✅
-- [x] Analytics page with placeholder charts
-- [x] (Charts ready for implementation with data)
+### Templates / Email Lists / Campaigns / Analytics
+- UI scaffolded, not yet wired to a backend (see "Next Steps")
 
 ### API Routes ✅
 - [x] Health check endpoint `/api/health`
-- [x] Campaign send endpoint `/api/campaigns/send`
-- [x] List import endpoint `/api/lists/import`
-- [x] (Implementations ready for backend logic)
+- [x] SMTP config CRUD `/api/smtp`, `/api/smtp/:id`
+- [x] Email provider CRUD `/api/email-providers`, `/api/email-providers/:id`
+- [x] Campaign send endpoint `/api/campaigns/send` (auth-guarded stub)
+- [x] List import endpoint `/api/lists/import` (auth-guarded stub)
+- [x] All routes require a valid Supabase Bearer token; RLS enforces per-user access
+
+### Security ✅
+- [x] Admin-only auth, no public sign-up
+- [x] Server-side + client-side route gating for `/dashboard/*`
+- [x] Input validation on all write endpoints
+- [x] Generic error responses (no internal detail leakage); real errors only logged server-side
+- [x] Secrets encrypted at rest; never returned by any API response
+- [x] `.env*` gitignored (except the safe placeholder template)
 
 ### UI/UX ✅
 - [x] Modern gradient designs
@@ -236,87 +244,56 @@ See `.env.local.example` for template.
 ## Features Ready for Backend Implementation
 
 ### Template Editor
-- [x] UI ready at `/dashboard/templates/new`
+- [x] UI ready at `/dashboard/templates`
 - [ ] Rich HTML editor
 - [ ] Template preview
 - [ ] Variable support ({name}, {email}, etc)
 - [ ] Save to database
 
 ### Campaign Builder
-- [x] UI ready at `/dashboard/campaigns/new`
+- [x] UI ready at `/dashboard/campaigns`
 - [ ] Select template
 - [ ] Select email list
-- [ ] Select SMTP config
+- [ ] Select SMTP config / email provider
 - [ ] Schedule or send immediately
 - [ ] Email preview
 
 ### Email List Uploader
-- [x] UI ready at `/dashboard/lists/new`
-- [ ] CSV upload support
-- [ ] TXT upload support
-- [ ] XLSX upload support
+- [x] UI ready at `/dashboard/lists`
+- [ ] CSV/TXT/XLSX upload support
 - [ ] Validation
 - [ ] Progress tracking
 
 ### Analytics Dashboard
 - [x] Placeholder charts ready at `/dashboard/analytics`
-- [ ] Sent emails chart
-- [ ] Open rate chart
-- [ ] Click rate chart
+- [ ] Sent emails / open rate / click rate charts
 - [ ] Time series data
 - [ ] Real-time updates
 
 ### Email Sending
-- [x] API endpoint ready at `/api/campaigns/send`
-- [ ] SMTP integration
-- [ ] Microsoft Graph integration (OAuth2)
-- [ ] Gmail API integration
+- [x] Config storage ready (SMTP, Microsoft Graph, Gmail API - all encrypted in Supabase)
+- [x] API endpoint scaffolded at `/api/campaigns/send`
+- [ ] SMTP client integration (e.g. nodemailer) - not installed yet
+- [ ] Microsoft Graph integration (OAuth2 token flow) - not installed yet
+- [ ] Gmail API integration - not installed yet
 - [ ] Queue system for large campaigns
 - [ ] Retry logic
 - [ ] Bounce handling
 
 ## Next Steps for Development
 
-1. **Setup Database** (Required)
-   - Create Supabase project
-   - Run SQL schema from `SUPABASE_SCHEMA.md`
-
-2. **Create .env.local** (Required)
-   - Copy `.env.local.example`
-   - Add Supabase credentials
-
-3. **Test Authentication** (Required)
-   - Run `npm run dev`
-   - Test signup/login flow
-   - Verify sessions
-
-4. **Implement Template Editor** (High Priority)
-   - Add rich HTML editor component
-   - Implement save to database
-   - Add preview functionality
-
-5. **Implement Campaign Builder** (High Priority)
-   - Add form for campaign setup
-   - Implement database queries
-
-6. **Implement Email Sending** (High Priority)
-   - Add SMTP client
-   - Implement queue system
-   - Add error handling
-
-7. **Deploy to Vercel** (High Priority)
-   - Push to GitHub
-   - Configure Vercel deployment
-   - Setup custom domain
-
-8. **Add Analytics** (Medium Priority)
-   - Implement charts with Chart.js or Recharts
-   - Add real-time updates
-
-9. **Email Tracking** (Nice to Have)
-   - Implement pixel tracking
-   - Implement link tracking
-   - Dashboard analytics
+1. **Setup Database** (Required) - Create Supabase project, run SQL schema from `SUPABASE_SCHEMA.md`
+2. **Create .env.local** (Required) - Copy `.env.local.example`, add Supabase credentials + `APP_SECRET`
+3. **Create the admin account** (Required) - Supabase Dashboard > Authentication > Users > Add user (no public sign-up)
+4. **Disable public sign-up** (Required) - Supabase Dashboard > Authentication settings
+5. **Test Authentication** - Run `npm run dev`, test login flow
+6. **Add SMTP / Email Provider configs** - via `/dashboard/smtp` and `/dashboard/providers`
+7. **Implement Template Editor** (High Priority)
+8. **Implement Campaign Builder** (High Priority)
+9. **Implement Email Sending** (High Priority) - install and wire up nodemailer / MSAL / googleapis
+10. **Deploy to Vercel**
+11. **Add Analytics** (Medium Priority)
+12. **Email Tracking** (Nice to Have)
 
 ## Documentation
 
@@ -336,6 +313,7 @@ npm install
 
 # Setup .env.local (copy from .env.local.example)
 # Setup Supabase database (run SUPABASE_SCHEMA.md)
+# Create the admin account in Supabase Dashboard > Authentication > Users
 
 # Development
 npm run dev
@@ -349,33 +327,23 @@ npm run start
 npm run lint
 ```
 
-## Build Information
-
-```
-Build: Next.js 14.0+
-Size: ~150KB (gzipped)
-Node: 18+
-Browser Support: All modern browsers
-Mobile: Responsive design
-```
-
 ## Performance
 
 - ⚡ Static pages cached
-- ⚡ API routes optimized
-- ⚡ Images optimized with Next.js Image
+- ⚡ API routes marked dynamic where they read per-request auth (no accidental caching of user data)
 - ⚡ CSS minified with Tailwind
-- ⚡ Code splitting with dynamic imports
+- ⚡ Code splitting via Next.js App Router
 
 ## Security
 
-- 🔒 Supabase Auth (OAuth2, JWT)
-- 🔒 Row Level Security on database
-- 🔒 Password hashed in auth
+- 🔒 Admin-only Supabase Auth (no public sign-up)
+- 🔒 Server-side (`proxy.ts`) + client-side route gating for `/dashboard/*`
+- 🔒 Bearer-token + Row Level Security on every `/api/*` route
+- 🔒 SMTP password, Graph client secret, Gmail service account JSON encrypted (AES-256-GCM) at rest
+- 🔒 Input validation + generic error responses (no internal detail leakage)
 - 🔒 Service role key server-side only
-- 🔒 CORS protection
-- 🔒 SQL injection prevention
-- 🔒 XSS protection with React escaping
+- 🔒 SQL injection prevention via Supabase's parameterized queries
+- 🔒 XSS protection via React's default escaping
 
 ## Support & Documentation
 
@@ -392,11 +360,9 @@ MIT License
 
 ## Final Notes
 
-✅ Project is fully structured and ready for development  
-✅ All authentication flows are complete  
-✅ Dashboard and UI components are ready  
-✅ Database schema is designed  
-✅ API routes are scaffolded  
-✅ Deployment is ready  
+✅ Auth, dashboard, SMTP config, and Email Provider config are fully implemented end-to-end  
+✅ Database schema is designed (including encrypted-secret tables) and documented  
+✅ API routes are hardened (validation, auth, safe errors)  
+⏳ Template editor, campaign builder, list uploader, analytics, and actual email sending are still UI-only / stubbed
 
-Next: Setup Supabase → Run locally → Implement backend → Deploy to Vercel! 🚀
+Next: Setup Supabase → Run locally → Implement remaining backend logic → Deploy to Vercel! 🚀

@@ -56,14 +56,10 @@ npm run dev
 
 Open http://localhost:3000 - You should see the login page!
 
-## 7. Create Account & Test
+## 7. Login & Test
 
-1. Click "Sign up here"
-2. Create account with:
-   - Email: `test@example.com`
-   - Password: `password123` (or any password ≥ 6 chars)
-3. Login with your credentials
-4. Explore the dashboard!
+1. Login with the admin account you created directly in Supabase (Authentication > Users > Add user) - there is no public sign-up page
+2. Explore the dashboard!
 
 ## Test The Features
 
@@ -79,7 +75,11 @@ Open http://localhost:3000 - You should see the login page!
   - Port: `587`
   - Username: `your-email@gmail.com`
   - Password: `your-app-password`
-- [x] Click Save
+- [x] Click Save - it's stored encrypted in Supabase via `/api/smtp`
+
+### Email Providers (Microsoft Graph / Gmail API)
+- [x] Go to `/dashboard/providers`
+- [x] Add a Microsoft Graph or Gmail API config - also stored encrypted via `/api/email-providers`
 
 ### Templates
 - [x] Click "Create New Template"
@@ -111,9 +111,9 @@ npm run dev
 - Make sure Supabase Auth is enabled
 
 ### "Login always fails"
-- Verify email/password match what you signed up with
-- Check Supabase > Authentication > Users to see registered users
-- Try creating a new account
+- Verify email/password match the admin account created in Supabase
+- Check Supabase > Authentication > Users to confirm the account exists
+- Reset the password from Supabase > Authentication > Users if needed
 
 ## Next Steps
 
